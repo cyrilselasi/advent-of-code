@@ -8,6 +8,11 @@ import (
 	"strconv"
 )
 
+var (
+	wordDigits   = [9]string{"one", "two", "three", "four", "five", "six", "seven", "eight", "nine"}
+	wordDigitMap = make(map[string]int, 9)
+)
+
 func GetDigitsFromString(re *regexp.Regexp, input string, output []string) ([]string, error) {
 	if output == nil {
 		output = make([]string, 0)
@@ -40,12 +45,11 @@ func main() {
 		fmt.Println("An error occured while opening the input file")
 		panic(err)
 	}
+	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 
 	// Create a Map of word digits and their int values to use in a lookup down the line
-	wordDigits := [9]string{"one", "two", "three", "four", "five", "six", "seven", "eight", "nine"}
-	wordDigitMap := make(map[string]int)
 	for i, v := range wordDigits {
 		wordDigitMap[v] = i + 1
 	}
@@ -111,5 +115,4 @@ func main() {
 
 	fmt.Printf("Calibration Complete. Calibration Value = %d\n\n", calibrationTotal)
 
-	defer file.Close()
 }
