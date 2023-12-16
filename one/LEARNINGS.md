@@ -14,6 +14,7 @@ There are a few ways to read content of a file. The first and obvious one is to 
 ### "fmt"
 ### "bufio"
 ### "strconv"
+### Regular Expression Matches Don't Overlap
 
 ## GoCoach
 The concepts I wanted to understand while completing day 1's task was around how error handling worked in Go in comparison to languages like TypeScript and Java which I'm more familiar with. Additionally, I wanted to understand the go approach to some programming fundamentals like string manipulation and regular expression usage.

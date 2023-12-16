@@ -8,18 +8,57 @@ import (
 	"strconv"
 )
 
+func GetDigitsFromString(input string, output []string) ([]string, error) {
+	if output == nil {
+		output = make([]string, 0)
+	}
+	re, err := regexp.Compile(`\d|one|two|three|four|five|six|seven|eight|nine`)
+	if err != nil {
+		fmt.Println("Failed to compile regular expression for finding digits")
+		return nil, err
+	}
+	if len(input) == 0 {
+		return output, nil
+	}
+
+	if len(input) == 1 {
+		match := re.FindString(input)
+		if match != "" {
+			output = append(output, match)
+		}
+		return output, nil
+	}
+	matchIndex := re.FindStringIndex(input)
+	if matchIndex == nil {
+		return output, nil
+	}
+	match := input[matchIndex[0]:matchIndex[1]]
+	if match != "" {
+		output = append(output, match)
+	}
+	return GetDigitsFromString(input[matchIndex[0]+1:], output)
+}
+
 func main() {
 	file, err := os.Open("one/input.txt")
 	if err != nil {
 		fmt.Println("An error occured while opening the input file")
-		panic(err);
+		panic(err)
 	}
 
 	scanner := bufio.NewScanner(file)
 
+	// Create a Map of word digits and their int values to use in a lookup down the line
+	wordDigits := [9]string{"one", "two", "three", "four", "five", "six", "seven", "eight", "nine"}
+	wordDigitMap := make(map[string]int)
+	for i, v := range wordDigits {
+		wordDigitMap[v] = i + 1
+	}
+
 	// Digit regular expression definition - \d to match single digits and not the whole character group
-	digitRe, err := regexp.Compile(`\d`); if err != nil {
-		fmt.Println("Failed to compile regular expression for finding digits")
+	digitOnlyRe, err := regexp.Compile(`\d`)
+	if err != nil {
+		fmt.Println("Failed to compile digit only regex")
 		panic(err)
 	}
 
@@ -29,7 +68,11 @@ func main() {
 	for scanner.Scan() {
 		line := scanner.Text()
 		fmt.Printf("Calibrating New Line: %s\n", line)
-		matches := digitRe.FindAllString(line, -1)
+		matches, err := GetDigitsFromString(line, nil)
+		if err != nil {
+			fmt.Println("Failed to Get Digits from String")
+			panic(err)
+		}
 		// Per AoC, the first and last digits are read as the first occurence of a digit forwards and backwards
 		// So, if there's only one digit, that digit is considered both the first and last occurence.
 		if len(matches) < 1 {
@@ -37,15 +80,23 @@ func main() {
 			continue
 		}
 
-		first := matches[0]
-		last := matches[len(matches) - 1]
-		calibrationStr := first + last
+		var first = matches[0]
+		var last = matches[len(matches)-1]
 
+		if digitOnlyRe.MatchString(first) == false {
+			// String is not a digit so must be a word digit
+			first = strconv.Itoa(wordDigitMap[first])
+		}
+		if digitOnlyRe.MatchString(last) == false {
+			last = strconv.Itoa(wordDigitMap[last])
+		}
+		calibrationStr := first + last
 
 		fmt.Printf("Found a total of %d digits in the string. %s and %s are the first and last digits\n", len(matches), first, last)
 		fmt.Printf("Calibration String is %s\n", calibrationStr)
-		
-		calibration, err := strconv.Atoi(calibrationStr); if err != nil {
+
+		calibration, err := strconv.Atoi(calibrationStr)
+		if err != nil {
 			fmt.Printf("Failed to convert calibration string: %s to an integer\n", calibrationStr)
 			panic(err)
 		}
@@ -59,6 +110,6 @@ func main() {
 	}
 
 	fmt.Printf("Calibration Complete. Calibration Value = %d\n\n", calibrationTotal)
-	
+
 	defer file.Close()
 }
