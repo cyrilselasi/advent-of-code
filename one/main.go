@@ -8,14 +8,9 @@ import (
 	"strconv"
 )
 
-func GetDigitsFromString(input string, output []string) ([]string, error) {
+func GetDigitsFromString(re *regexp.Regexp, input string, output []string) ([]string, error) {
 	if output == nil {
 		output = make([]string, 0)
-	}
-	re, err := regexp.Compile(`\d|one|two|three|four|five|six|seven|eight|nine`)
-	if err != nil {
-		fmt.Println("Failed to compile regular expression for finding digits")
-		return nil, err
 	}
 	if len(input) == 0 {
 		return output, nil
@@ -36,7 +31,7 @@ func GetDigitsFromString(input string, output []string) ([]string, error) {
 	if match != "" {
 		output = append(output, match)
 	}
-	return GetDigitsFromString(input[matchIndex[0]+1:], output)
+	return GetDigitsFromString(re, input[matchIndex[0]+1:], output)
 }
 
 func main() {
@@ -55,6 +50,11 @@ func main() {
 		wordDigitMap[v] = i + 1
 	}
 
+	re, err := regexp.Compile(`\d|one|two|three|four|five|six|seven|eight|nine`)
+	if err != nil {
+		fmt.Println("Failed to compile regular expression for finding digits")
+		panic(err)
+	}
 	// Digit regular expression definition - \d to match single digits and not the whole character group
 	digitOnlyRe, err := regexp.Compile(`\d`)
 	if err != nil {
@@ -68,7 +68,7 @@ func main() {
 	for scanner.Scan() {
 		line := scanner.Text()
 		fmt.Printf("Calibrating New Line: %s\n", line)
-		matches, err := GetDigitsFromString(line, nil)
+		matches, err := GetDigitsFromString(re, line, nil)
 		if err != nil {
 			fmt.Println("Failed to Get Digits from String")
 			panic(err)
